@@ -41,6 +41,8 @@ BC Education Data {.sidebar}
 ===================================
 This project portrays 2020 geographic, and 15-year longitudinal data on English Learner and students with exceptionalities in the province of British Columbia. Navigate to multiple interactive figures that indicate the amount of **classrooms** in each district that are composed of at least three students with individualized education plans or English Learners. Three students with IEPs **or** identified as ELs is the codified threshold that indicates teachers **may** be best supported with additional resources for providing effective instruction to all learners in their classroom.
 
+*Note: the interactive maps include federal riding regions, not school district regions. Therefore, values are mapped approximately to locale and some locations have insufficient data.*
+
 All data is gathered from the BC Minsitry of Education [open-source data files](https://catalogue.data.gov.bc.ca/dataset). This is an open-source data science project for EDLD 652 at the University of Oregon produced by [David Fainstein](https://twitter.com/TeachAbilities).
 
 
@@ -71,22 +73,22 @@ IEPex1 <- districting %>%
           NUMBER_CLASSES_7_PLUS_IEP,
          riding_code) %>% 
   group_by(riding_code) %>% 
-  summarise(`+3 IEPs` = sum(NUMBER_CLASSES_3_IEP,
+  summarise(`Classes >2 IEPs` = sum(NUMBER_CLASSES_3_IEP,
                             NUMBER_CLASSES_4_IEP,
                             NUMBER_CLASSES_5_IEP,
                             NUMBER_CLASSES_6_IEP,
                             NUMBER_CLASSES_7_PLUS_IEP)) %>%
   drop_na() %>% 
-  full_join(BC_data, by = "riding_code")
+  full_join(BC_data, by = "riding_code") %>% 
+  rename("Region" = riding_name_english) 
 
-IEP <- ggplot(IEPex1, aes(x = long, y = lat, group = group, fill = `+3 IEPs`)) +
+IEP <- ggplot(IEPex1, aes(x = long, y = lat, group = group, fill = `Classes >2 IEPs`, A = Region, B = `Classes >2 IEPs`)) +
   geom_polygon() +
   coord_fixed() +
   theme_mapcan() +
-  # labs(title = "") +
-  scale_fill_continuous(name = "Total Classes with >=3 Students with IEPs")
+  scale_fill_continuous(name = "Total Classes with at least 3 Students with IEPs")
 
-ggplotly(IEP)
+ggplotly(IEP, tooltip = c("A", "B"))
 # ggplotly(EL)
 # gridExtra::grid.arrange(IEP, EL, ncol = 2)
 # plotly::ggplotly(IEP)
@@ -158,7 +160,7 @@ ELex1 <- districting %>%
          NUMBER_CLASSES_7_PLUS_ELL,
          riding_code) %>%
   group_by(riding_code) %>%
-  summarise(`+1 ELs` = sum( NUMBER_CLASSES_1_ELL, 
+  summarise(`Classes >2 ELs` = sum( NUMBER_CLASSES_1_ELL, 
                             NUMBER_CLASSES_2_ELL,
                             NUMBER_CLASSES_3_ELL,
                             NUMBER_CLASSES_4_ELL,
@@ -166,15 +168,16 @@ ELex1 <- districting %>%
                             NUMBER_CLASSES_6_ELL,
                             NUMBER_CLASSES_7_PLUS_ELL)) %>%
   drop_na() %>%
-  full_join(BC_data, by = "riding_code") 
+  full_join(BC_data, by = "riding_code") %>% 
+  rename("Region" = riding_name_english)
 
-EL <- ggplot(ELex1, aes(x = long, y = lat, group = group, fill = `+1 ELs`)) +
+EL <- ggplot(ELex1, aes(x = long, y = lat, group = group, fill = `Classes >2 ELs`, A = Region, B = `Classes >2 ELs`)) +
   geom_polygon() +
   coord_fixed() +
   theme_mapcan() +
   scale_fill_continuous(name = "Total Students in Classes with >3 ELs")
 
-ggplotly(EL)
+ggplotly(EL, tooltip = c("A", "B"))
 
 ```
 
