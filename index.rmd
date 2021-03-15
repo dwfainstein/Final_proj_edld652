@@ -9,8 +9,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-# install.packages("mapcan")
-# you will probably need to install this package is specific to choropleths for Canada
 library(flexdashboard)
 library(here)
 library(readxl)
@@ -41,19 +39,16 @@ districting$SCHOOL_YEAR <- str_sub(districting$SCHOOL_YEAR, 6)
 
 BC Education Data {.sidebar}
 ===================================
-Three interactive figures are included, which indicate the amount of classrooms in each district that are composed of at least three students with individualized education plans or English Learners. Three is significant because it represents the minimum threshold for additional supports to be put in place for classroom teachers in supporting students with accommodations and modifications.
+This project portrays 2020 geographic, and 15-year longitudinal data on English Learner and students with exceptionalities in the province of British Columbia. Navigate to multiple interactive figures that indicate the amount of **classrooms** in each district that are composed of at least three students with individualized education plans or English Learners. Three students with IEPs **or** identified as ELs is the codified threshold that indicates teachers **may** be best supported with additional resources for providing effective instruction to all learners in their classroom.
 
-All data is gathered from the BC Minsitry of Education [open-source data files](https://catalogue.data.gov.bc.ca/dataset).
+All data is gathered from the BC Minsitry of Education [open-source data files](https://catalogue.data.gov.bc.ca/dataset). This is an open-source data science project for EDLD 652 at the University of Oregon produced by [David Fainstein](https://twitter.com/TeachAbilities).
 
 
-IEP Map
+Individualized Education Plans
 ===============================
-Column {data-width=350}
+Column {.tabset}
 ----------------------
-### Number of K-12 Classes with at least Three Students with IEPs by District in BC
-
- Future iterations of this figure may demonstrate
-this relationship over time for the province of BC.
+### Classes with Minimum Three Students with IEPs
 
 ```{r setMap}
 BC_data <- mapcan::census_pop2016 %>% 
@@ -98,15 +93,7 @@ ggplotly(IEP)
 # renderPlotly(IEP)
 
 ```
-
-IEP Longitudinal
-=============================
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Students with IEPs in Overcapacity Classrooms
-
+### Longitudinal Classes with >3 IEPs
 
 ```{r IEP_time}
 
@@ -136,7 +123,7 @@ longitudinalBC1 <- ggplot(Plot_Longitudinal1, aes(SCHOOL_YEAR, totalIEPs))+
        xlab("School Year") +
        ylab("IEPs in Overcapacity Classrooms") +
   theme(legend.position = "none") +
-    annotate(geom = "text", x = 2014, y = 850, label = "Surrey", hjust = "left") +
+    annotate(geom = "text", x = 2012, y = 830, label = "Surrey", hjust = "left") +
     annotate(geom = "text", x = 2008, y = 1080, label = "Vancouver", hjust = "left") +
     annotate(geom = "text", x = 2012, y = 340, label = "Victoria", hjust = "left")
 
@@ -147,14 +134,13 @@ ggplotly(longitudinalBC1)
 
 
 
-
-EL Map
+English Learners
 =============================
 
-Column {data-width=350}
+Column {.tabset}
 -----------------------------------------------------------------------
 
-### Number of Students in K-12 Classes with at least Three Students Designated as an English Learner
+### Classes with Minimum Three Students Designated as English Learners
 
 This is another interactive figure which indicates the amount of classrooms in each district that are composed of at least one student who is identified as an English Learner. This is important because the combination of English Learners and students with individualized needs frequently triggers additional supports to be put in place for classroom teachers to make accommodations and modifications for all students who may require additional support.. Future iterations of this figure may demonstrate
 this relationship over time for the province of BC.
@@ -186,21 +172,13 @@ EL <- ggplot(ELex1, aes(x = long, y = lat, group = group, fill = `+1 ELs`)) +
   geom_polygon() +
   coord_fixed() +
   theme_mapcan() +
-  scale_fill_continuous(name = "Total Classes with >1 Student Learning English")
+  scale_fill_continuous(name = "Total Students in Classes with >3 ELs")
 
 ggplotly(EL)
 
 ```
 
-
-
-EL Longitudinal
-=============================
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### English Learners in Overcapacity Classrooms
+### Longitudinal Classes with >3 ELs
 
 
 ```{r EL_time}
@@ -240,4 +218,21 @@ ggplotly(longitudinalBC)
 
 
 ```
+
+Combined Map
+=============================
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### EL Juxtaposed IEP
+
+
+```{r Combined}
+
+gridExtra::grid.arrange(IEP, EL, ncol = 2)
+
+````
+
+
 
