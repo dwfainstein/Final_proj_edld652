@@ -20,14 +20,15 @@ library(plotly)
 library(stringr)
 library(viridis)
 library(ggpubr)
+library(RColorBrewer)
 ```
 
 ``` {r prep}
-composition_data <- read_excel(here("data", "class_size_composition.xlsx")) %>% 
+composition_data <- read_excel("data/class_size_composition.xlsx") %>% 
   filter(DATA_LEVEL == "DISTRICT LEVEL",
          GRADE_GROUP == "All Grades")
 
-districting <- read_excel(here("data", "DataVizfinal_names.xlsx")) %>% 
+districting <- read_excel("data/DataVizfinal_names.xlsx") %>% 
   select(SD,
          DISTRICT_NAME,
          riding_name_english,
@@ -104,36 +105,41 @@ ggplotly(IEP, tooltip = c("A", "B"))
 
 Plot_Longitudinal1 <- districting %>% 
   mutate(SCHOOL_YEAR = as.numeric(SCHOOL_YEAR),
-          totalIEPs = NUMBER_CLASSES_3_IEP,
+          `+3 IEP Classrooms` = NUMBER_CLASSES_3_IEP,
           NUMBER_CLASSES_4_IEP,
           NUMBER_CLASSES_5_IEP,
           NUMBER_CLASSES_6_IEP,
-          NUMBER_CLASSES_7_PLUS_IEP,)
+          NUMBER_CLASSES_7_PLUS_IEP,) %>% 
+  rename("Year" = SCHOOL_YEAR,
+         "District" = DISTRICT_NAME) 
 
-longitudinalBC1 <- ggplot(Plot_Longitudinal1, aes(SCHOOL_YEAR, totalIEPs))+
-  geom_line(aes(group = DISTRICT_NAME),
-            color = "gray75",
+Plot_Longitudinal1 <- highlight_key(Plot_Longitudinal1, ~District)
+
+longitudinalBC1 <- ggplot(Plot_Longitudinal1, aes(Year, `+3 IEP Classrooms`))+
+  geom_line(aes(group = District),
+            # color = "gray75",
             alpha = 0.3) +
-  geom_line(data = filter(Plot_Longitudinal1,
-      DISTRICT_NAME == "Surrey"),
-           color = "#D95F02") +
-  geom_line(data = filter(Plot_Longitudinal1,
-      DISTRICT_NAME == "Vancouver"),
-      color = "#7570B3") +
-  geom_line(data = filter(Plot_Longitudinal1,
-      DISTRICT_NAME == "Greater Victoria"),
-           color = "#E7298A") +
+  # geom_line(data = filter(Plot_Longitudinal1,
+  #     DISTRICT_NAME == "Surrey"),
+  #          color = "#D95F02") +
+  # geom_line(data = filter(Plot_Longitudinal1,
+  #     DISTRICT_NAME == "Vancouver"),
+  #     color = "#7570B3") +
+  # geom_line(data = filter(Plot_Longitudinal1,
+  #     DISTRICT_NAME == "Greater Victoria"),
+  #          color = "#E7298A") +
   theme_minimal() +
   labs(title = "Classrooms with at least 3 IEPs by School District") +
        xlab("School Year") +
        ylab("Number of Classrooms with >= 3 IEPs") +
-  theme(legend.position = "none") +
-    annotate(geom = "text", x = 2012, y = 830, label = "Surrey", hjust = "left") +
-    annotate(geom = "text", x = 2008, y = 1080, label = "Vancouver", hjust = "left") +
-    annotate(geom = "text", x = 2012, y = 340, label = "Victoria", hjust = "left")
+  theme(legend.position = "none")
+    # annotate(geom = "text", x = 2012, y = 830, label = "Surrey", hjust = "left") +
+    # annotate(geom = "text", x = 2008, y = 1080, label = "Vancouver", hjust = "left") +
+    # annotate(geom = "text", x = 2012, y = 340, label = "Victoria", hjust = "left")
 
-ggplotly(longitudinalBC1)
-
+cols <- toRGB(brewer.pal(3, "Dark2"), 0.5)
+IEP_long <- ggplotly(longitudinalBC1, tooltip = c("District", "Year", "+3 IEP Classrooms"))
+highlight(IEP_long, on = "plotly_hover", color = cols, dynamic = TRUE)
 
 ```
 
@@ -189,40 +195,41 @@ ggplotly(EL, tooltip = c("A", "B"))
 
 Plot_Longitudinal <- districting %>% 
   mutate(SCHOOL_YEAR = as.numeric(SCHOOL_YEAR),
-          totalELs = NUMBER_CLASSES_3_ELL +
+          `Classrooms with +3 ELs` = NUMBER_CLASSES_3_ELL +
            NUMBER_CLASSES_4_ELL +
            NUMBER_CLASSES_5_ELL +
            NUMBER_CLASSES_6_ELL +
-           NUMBER_CLASSES_7_PLUS_ELL)
+           NUMBER_CLASSES_7_PLUS_ELL) %>% 
+  rename("Year" = SCHOOL_YEAR,
+         "District" = DISTRICT_NAME) 
 
-longitudinalBC <- ggplot(Plot_Longitudinal, aes(SCHOOL_YEAR, totalELs))+
-  geom_line(aes(group = DISTRICT_NAME),
-            color = "gray75",
+Plot_Longitudinal <- highlight_key(Plot_Longitudinal, ~District)
+
+longitudinalBC <- ggplot(Plot_Longitudinal, aes(Year, `Classrooms with +3 ELs`), District, Year, `Classrooms with +3 ELs`)+
+  geom_line(aes(group = District),
             alpha = 0.3) +
-  # gghighlight::gghighlight(unhighlighted_params = list(alpha=0.3)) +
-  geom_line(data = filter(Plot_Longitudinal,
-      DISTRICT_NAME == "Surrey"),
-           color = "#D95F02") +
-  geom_line(data = filter(Plot_Longitudinal,
-      DISTRICT_NAME == "Vancouver"),
-      color = "#7570B3") +
-  geom_line(data = filter(Plot_Longitudinal,
-      DISTRICT_NAME == "Greater Victoria"),
-           color = "#E7298A") +
+  # geom_line(data = filter(Plot_Longitudinal,
+  #     DISTRICT_NAME == "Surrey"),
+  #          color = "#D95F02") +
+  # geom_line(data = filter(Plot_Longitudinal,
+  #     DISTRICT_NAME == "Vancouver"),
+  #     color = "#7570B3") +
+  # geom_line(data = filter(Plot_Longitudinal,
+  #     DISTRICT_NAME == "Greater Victoria"),
+  #          color = "#E7298A") +
   theme_minimal() +
   labs(title = "Classrooms with at least 3 ELs by School District") +
        xlab("School Year") +
        ylab("Number of Classrooms with >= 3 ELs") +
-  theme(legend.position = "none") +
-    annotate(geom = "text", x = 2017, y = 3250, label = "Surrey", hjust = "left") +
-    annotate(geom = "text", x = 2008, y = 3350, label = "Vancouver", hjust = "left") +
-    annotate(geom = "text", x = 2012, y = 500, label = "Victoria", hjust = "left")
+  theme(legend.position = "none") 
+    # annotate(geom = "text", x = 2017, y = 3250, label = "Surrey", hjust = "left") +
+    # annotate(geom = "text", x = 2008, y = 3350, label = "Vancouver", hjust = "left") +
+    # annotate(geom = "text", x = 2012, y = 500, label = "Victoria", hjust = "left")
 
-ggplotly(longitudinalBC) #%>% 
-  # toWebGL() %>% 
-  # highlight_key(~DISTRICT_NAME) %>%
-  # highlight(on = "plotly_hover", color = "red")
+# cols <- toRGB(brewer.pal(3, "Dark2"), 0.5)
 
+p <- ggplotly(longitudinalBC, tooltip = c("District", "Year", "Classrooms with +3 ELs"))
+highlight(p, on = "plotly_hover", color = cols, dynamic = TRUE)
 
 ```
 
@@ -237,14 +244,13 @@ Column {data-width=350}
 
 ```{r Combined}
 
-# ggarrange(IEP, EL, ncol = 2, common.legend = TRUE)
-library(cowplot)
-# legend <- get_legend(IEP)
-# 
-# IEP <- IEP +
-#   theme(legend.position = "none")
+library(patchwork)
 
-plot_grid(IEP, EL, ncol = 2)
+IEP + EL + 
+  plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 6)) 
 
 ````
 
