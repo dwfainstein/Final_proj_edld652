@@ -5,7 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
-    source: https://github.com/dwfainstein/Final_proj_edld652
+    source: http://dwfainstein.shinyapps.io/Final_proj_edld652
 ---
 
 ```{r setup, include=FALSE}
