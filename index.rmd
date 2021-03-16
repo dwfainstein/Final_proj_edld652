@@ -18,6 +18,8 @@ library(janitor)
 library(shiny)
 library(plotly)
 library(stringr)
+library(viridis)
+library(ggpubr)
 ```
 
 ``` {r prep}
@@ -39,7 +41,7 @@ districting$SCHOOL_YEAR <- str_sub(districting$SCHOOL_YEAR, 6)
 
 BC Education Data {.sidebar}
 ===================================
-This project portrays 2020 geographic, and 15-year longitudinal data on English Learner and students with exceptionalities in the province of British Columbia. Navigate to multiple interactive figures that indicate the amount of **classrooms** in each district that are composed of at least three students with individualized education plans or English Learners. Three students with IEPs **or** identified as ELs is the codified threshold that indicates teachers **may** be best supported with additional resources for providing effective instruction to all learners in their classroom.
+This project portrays 2020 geographic, and 15-year longitudinal data on English Learners and students with exceptionalities in the province of British Columbia. Navigate to multiple interactive figures that indicate the amount of **classrooms** in each district that are composed of at least three students with individualized education plans or English Learners. 
 
 *Note: the interactive maps include federal riding regions, not school district regions. Therefore, values are mapped approximately to locale and some locations have insufficient data.*
 
@@ -86,7 +88,8 @@ IEP <- ggplot(IEPex1, aes(x = long, y = lat, group = group, fill = `Classes >2 I
   geom_polygon() +
   coord_fixed() +
   theme_mapcan() +
-  scale_fill_continuous(name = "Total Classes with at least 3 Students with IEPs")
+  scale_fill_viridis_c(name = "Total Classes with at least 3 \n Students with IEPs") #+
+  # theme(legend.box = "vertical")
 
 ggplotly(IEP, tooltip = c("A", "B"))
 # ggplotly(EL)
@@ -95,7 +98,7 @@ ggplotly(IEP, tooltip = c("A", "B"))
 # renderPlotly(IEP)
 
 ```
-### Longitudinal Classes with >3 IEPs
+### Longitudinal View
 
 ```{r IEP_time}
 
@@ -121,9 +124,9 @@ longitudinalBC1 <- ggplot(Plot_Longitudinal1, aes(SCHOOL_YEAR, totalIEPs))+
       DISTRICT_NAME == "Greater Victoria"),
            color = "#E7298A") +
   theme_minimal() +
-  labs(title = "Classrooms with +3 IEPs by School District") +
+  labs(title = "Classrooms with at least 3 IEPs by School District") +
        xlab("School Year") +
-       ylab("IEPs in Overcapacity Classrooms") +
+       ylab("Number of Classrooms with >= 3 IEPs") +
   theme(legend.position = "none") +
     annotate(geom = "text", x = 2012, y = 830, label = "Surrey", hjust = "left") +
     annotate(geom = "text", x = 2008, y = 1080, label = "Vancouver", hjust = "left") +
@@ -143,9 +146,6 @@ Column {.tabset}
 -----------------------------------------------------------------------
 
 ### Classes with Minimum Three Students Designated as English Learners
-
-This is another interactive figure which indicates the amount of classrooms in each district that are composed of at least one student who is identified as an English Learner. This is important because the combination of English Learners and students with individualized needs frequently triggers additional supports to be put in place for classroom teachers to make accommodations and modifications for all students who may require additional support.. Future iterations of this figure may demonstrate
-this relationship over time for the province of BC.
 
 ```{r ELexample}
 
@@ -175,13 +175,14 @@ EL <- ggplot(ELex1, aes(x = long, y = lat, group = group, fill = `Classes >2 ELs
   geom_polygon() +
   coord_fixed() +
   theme_mapcan() +
-  scale_fill_continuous(name = "Total Students in Classes with >3 ELs")
+  scale_fill_viridis_c(name = "Total Classes with \n at least 3 ELs")
+  
 
 ggplotly(EL, tooltip = c("A", "B"))
 
 ```
 
-### Longitudinal Classes with >3 ELs
+### Longitudinal View
 
 
 ```{r EL_time}
@@ -209,15 +210,18 @@ longitudinalBC <- ggplot(Plot_Longitudinal, aes(SCHOOL_YEAR, totalELs))+
       DISTRICT_NAME == "Greater Victoria"),
            color = "#E7298A") +
   theme_minimal() +
-  labs(title = "Classrooms with +3 ELs by School District") +
+  labs(title = "Classrooms with at least 3 ELs by School District") +
        xlab("School Year") +
-       ylab("ELs in Overcapacity Classrooms") +
+       ylab("Number of Classrooms with >= 3 ELs") +
   theme(legend.position = "none") +
     annotate(geom = "text", x = 2017, y = 3250, label = "Surrey", hjust = "left") +
     annotate(geom = "text", x = 2008, y = 3350, label = "Vancouver", hjust = "left") +
     annotate(geom = "text", x = 2012, y = 500, label = "Victoria", hjust = "left")
 
-ggplotly(longitudinalBC)
+ggplotly(longitudinalBC) #%>% 
+  # toWebGL() %>% 
+  # highlight_key(~DISTRICT_NAME) %>%
+  # highlight(on = "plotly_hover", color = "red")
 
 
 ```
@@ -233,7 +237,14 @@ Column {data-width=350}
 
 ```{r Combined}
 
-gridExtra::grid.arrange(IEP, EL, ncol = 2)
+# ggarrange(IEP, EL, ncol = 2, common.legend = TRUE)
+library(cowplot)
+# legend <- get_legend(IEP)
+# 
+# IEP <- IEP +
+#   theme(legend.position = "none")
+
+plot_grid(IEP, EL, ncol = 2)
 
 ````
 
